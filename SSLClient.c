@@ -3,6 +3,8 @@
 // Compiling   : g++ -c -o SSLClient.o SSLClient.cpp
 //                 g++ -o SSLClient SSLClient.o -lssl -lcrypto
 //                 g++ -o SSLClient SSLClient.o CFLAGS = -g -O3 -Wall -pedantic -mtune=native -I/usr/local/opt/openssl/include CXXFLAGS = -g -O3 -Wall -pedantic -mtune=native -I/usr/local/opt/openssl/include LDFLAGS = -L/usr/local/opt/openssl/lib
+// I modified this so it would be a pure C compile instead of g++. gcc or cc will run the compile.
+// cc -L/usr/local/opt/openssl/lib -I/usr/local/opt/openssl/include -o SSLClient SSLClient.c -lssl -lcrypto
 //============================================================================
 #include <stdio.h>
 #include <sys/socket.h>
