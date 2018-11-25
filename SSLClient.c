@@ -19,21 +19,25 @@ int sock;
 int RecvPacket()
 {
     int len=100;
+    int ret = 0;
     char buf[1000000];
     do {
         len=SSL_read(ssl, buf, 100);
         buf[len]=0;
-        printf(buf);
+        printf("%s\n", buf);
     } while (len > 0);
     if (len < 0) {
         int err = SSL_get_error(ssl, len);
         if (err == SSL_ERROR_WANT_READ)
-            return 0;
+            ret = 0;
         if (err == SSL_ERROR_WANT_WRITE)
-            return 0;
+            ret = 0;
         if (err == SSL_ERROR_ZERO_RETURN || err == SSL_ERROR_SYSCALL || err == SSL_ERROR_SSL)
-            return -1;
+            ret = -1;
+    } else {
+        ret = -1;
     }
+    return ret;
 }
 
 int SendPacket(const char *buf)
@@ -52,6 +56,8 @@ int SendPacket(const char *buf)
             default:
                 return -1;
         }
+    } else {
+        return -1;
     }
 }
 
@@ -59,12 +65,11 @@ int SendPacket(const char *buf)
 void log_ssl()
 {
     int err;
-    while (err = ERR_get_error()) {
+    while ((err = ERR_get_error())) {
         char *str = ERR_error_string(err, 0);
         if (!str)
             return;
-        printf(str);
-        printf("\n");
+        printf("%s\n", str);
         fflush(stdout);
     }
 }
