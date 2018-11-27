@@ -7,9 +7,11 @@
 // cc -L/usr/local/opt/openssl/lib -I/usr/local/opt/openssl/include -o SSLClient SSLClient.c -lssl -lcrypto
 //============================================================================
 #include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
@@ -23,7 +25,8 @@ int RecvPacket()
     char buf[1000000];
     do {
         len=SSL_read(ssl, buf, 100);
-        buf[len]=0;
+        printf("LEN: %d", len);
+        buf[len] = 0;
         printf("%s\n", buf);
     } while (len > 0);
     if (len < 0) {
@@ -77,6 +80,13 @@ void log_ssl()
 
 int main(int argc, char *argv[])
 {
+    // set domian name to "login.salesforce.com"
+    struct hostent* hostname = gethostbyname("login.salesforce.com");
+    struct in_addr addr;
+    memcpy(&addr, hostname->h_addr_list[0], sizeof(struct in_addr)); 
+    char *ip = inet_ntoa(addr);
+    printf("IP: %s\n", ip);
+
     int s;
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (!s) {
@@ -86,7 +96,7 @@ int main(int argc, char *argv[])
     struct sockaddr_in sa;
     memset (&sa, 0, sizeof(sa));
     sa.sin_family      = AF_INET;
-    sa.sin_addr.s_addr = inet_addr("74.125.232.247"); // address of google.ru
+    sa.sin_addr.s_addr = inet_addr(ip); // address of login.salesforce.com
     sa.sin_port        = htons (443); 
     socklen_t socklen = sizeof(sa);
     if (connect(s, (struct sockaddr *)&sa, socklen)) {
@@ -115,7 +125,7 @@ int main(int argc, char *argv[])
     }
     printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
 
-    char *request = "GET https://www.google.ru/intl/en/about/company/facts/ HTTP/1.1\r\n\r\n";
+    char *request = "GET https://login.salesforce.com/ HTTP/1.1\r\nHost: login.salesforce.com \r\n\r\n";
     SendPacket(request);
     RecvPacket();
     return 0;
